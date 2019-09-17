@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -ex
+
+PARENT_PATH=$(dirname $(cd $(dirname $0); pwd -P))
+
+pushd $PARENT_PATH
+
+BUILD_NAME=bitcoin-butler-lambda-$1
+
+mkdir -p build
+
+printf "Build an executable \n"
+GOOS=$1 go build -o build/$BUILD_NAME main.go
+
+printf "Upload lambda functions in a zip file \n"
+zip build/$BUILD_NAME.zip build/$BUILD_NAME
+
+popd

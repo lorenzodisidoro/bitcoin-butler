@@ -1,0 +1,31 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+
+        "kms:Decrypt",
+        "kms:Encrypt",
+        "kms:CreateGrant",
+
+        "s3:CreateBucket",
+        "s3:GetBucketVersioning",
+        "s3:GetBucketAcl",
+        "s3:ListBucket",
+        "s3:ListBucketMultipartUploads",
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:GetObjectTorrent",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        
+        "apigateway:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
