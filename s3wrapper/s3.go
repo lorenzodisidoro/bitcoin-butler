@@ -74,7 +74,7 @@ func (s *S3Wrapper) DeleteBucket(name string) error {
 	return err
 }
 
-// UploadObject uploads an object to a bucket
+// UploadObject uploads an object to a bucket.
 // bucket as the name of bucket, body as the content body of file
 func (s *S3Wrapper) UploadObject(bucket, file, body string) error {
 	content := []byte(body)

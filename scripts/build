@@ -6,14 +6,18 @@ PARENT_PATH=$(dirname $(cd $(dirname $0); pwd -P))
 
 pushd $PARENT_PATH
 
-BUILD_NAME=bitcoin-butler-lambda-$1
+BUILD_NAME=main
 
 mkdir -p build
 
 printf "Build an executable \n"
-GOOS=$1 go build -o build/$BUILD_NAME main.go
+GOOS=$1 GOARCH=$2 go build -o $BUILD_NAME main.go
 
 printf "Upload lambda functions in a zip file \n"
-zip build/$BUILD_NAME.zip build/$BUILD_NAME
+zip main.zip $BUILD_NAME
+mv main.zip build
+mv $BUILD_NAME build
 
 popd
+
+printf "\nDeploy build/$BUILD_NAME as a AWS Lambda"
