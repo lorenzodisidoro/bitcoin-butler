@@ -16,9 +16,10 @@
   version = "v1.13.2"
 
 [[projects]]
-  digest = "1:5c20489d9ccf443878352503674e3ddede9feb9bc0d961534657d2941140602f"
+  digest = "1:e11b19e9c616f813cafb4f691e70cac83a7bcaa4beb09ccc060c167e3d382049"
   name = "github.com/aws/aws-sdk-go"
   packages = [
+    ".",
     "aws",
     "aws/awserr",
     "aws/awsutil",
@@ -48,11 +49,13 @@
     "private/protocol/eventstream",
     "private/protocol/eventstream/eventstreamapi",
     "private/protocol/json/jsonutil",
+    "private/protocol/jsonrpc",
     "private/protocol/query",
     "private/protocol/query/queryutil",
     "private/protocol/rest",
     "private/protocol/restxml",
     "private/protocol/xml/xmlutil",
+    "service/kms",
     "service/s3",
     "service/s3/s3iface",
     "service/s3/s3manager",
@@ -62,14 +65,6 @@
   pruneopts = "UT"
   revision = "d95533abfcd8b01d7084748aef7060fa6c9d0c3a"
   version = "v1.24.4"
-
-[[projects]]
-  digest = "1:f122604660db6945621e9ac2cc40f49ece6adff83f104b9f9f1331d1b6d76506"
-  name = "github.com/aws/aws-sdk-go-v2"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9d23340c6faa83de6f72d814bdb3b15667ca220e"
-  version = "v0.12.0"
 
 [[projects]]
   branch = "master"
@@ -127,9 +122,10 @@
   input-imports = [
     "github.com/aws/aws-lambda-go/events",
     "github.com/aws/aws-lambda-go/lambda",
-    "github.com/aws/aws-sdk-go-v2",
+    "github.com/aws/aws-sdk-go",
     "github.com/aws/aws-sdk-go/aws",
     "github.com/aws/aws-sdk-go/aws/session",
+    "github.com/aws/aws-sdk-go/service/kms",
     "github.com/aws/aws-sdk-go/service/s3",
     "github.com/aws/aws-sdk-go/service/s3/s3manager",
     "github.com/btcsuite/btcd/chaincfg",

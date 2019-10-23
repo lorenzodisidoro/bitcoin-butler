@@ -9,8 +9,6 @@
         "logs:PutLogEvents",
 
         "kms:Decrypt",
-        "kms:Encrypt",
-        "kms:CreateGrant",
 
         "s3:CreateBucket",
         "s3:GetBucketVersioning",

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/lorenzodisidoro/bitcoin-butler/s3wrapper"
 	"github.com/lorenzodisidoro/bitcoin-butler/walletlive"
 )
@@ -25,8 +28,8 @@ type lambdaResponse struct {
 }
 
 type lambdaError struct {
-	Status  int   `json:"status"`
-	Message error `json:"message"`
+	Status  int    `json:"status"`
+	Message string `json:"message"`
 }
 
 // main call lambda.Start() and pass lambda handler function
@@ -41,45 +44,59 @@ func lambdaHandler(req events.APIGatewayProxyRequest) (resp events.APIGatewayPro
 	fmt.Println("Request IP: ", requestIP)
 
 	if req.HTTPMethod == "GET" {
+		// retrieves the value of the environment variables
 		network, isPresent := os.LookupEnv("NETWORK")
 		if !isPresent {
-			serverError(http.StatusNotFound, errors.New("Not found environment variable 'NETWORK'"))
+			return serverError(http.StatusNotFound, errors.New("Not found environment variable 'NETWORK'"))
 		}
 
-		xPub, isPresent := os.LookupEnv("XPUB")
+		encryptedXPub, isPresent := os.LookupEnv("XPUB")
 		if !isPresent {
-			serverError(http.StatusNotFound, errors.New("Not found environment variable 'XPUB'"))
+			return serverError(http.StatusNotFound, errors.New("Not found environment variable 'XPUB'"))
 		}
 
-		path, isPresent := os.LookupEnv("PATH")
+		encryptedPath, isPresent := os.LookupEnv("PATH")
 		if !isPresent {
-			serverError(http.StatusNotFound, errors.New("Not found environment variable 'PATH'"))
+			return serverError(http.StatusNotFound, errors.New("Not found environment variable 'PATH'"))
 		}
 
-		// TODO: Move on S3 an incremental index
 		bucket, isPresent := os.LookupEnv("BUCKET_NAME")
 		if !isPresent {
-			serverError(http.StatusNotFound, errors.New("Not found environment variable 'BUCKET_NAME'"))
+			return serverError(http.StatusNotFound, errors.New("Not found environment variable 'BUCKET_NAME'"))
 		}
 
 		indexFile, isPresent := os.LookupEnv("INDEX_FILE_NAME")
 		if !isPresent {
-			serverError(http.StatusNotFound, errors.New("Not found environment variable 'BUCKET_NAME'"))
+			return serverError(http.StatusNotFound, errors.New("Not found environment variable 'BUCKET_NAME'"))
 		}
 
-		s3 := &s3wrapper.S3Wrapper{}
-		err := s3.New(Region)
+		// decrypt xPub and path
+		xPubBytes, err := decrypt(encryptedXPub, "Decrypting xPub")
 		if err != nil {
 			return serverError(http.StatusInternalServerError, err)
 		}
 
+		pathBytes, err := decrypt(encryptedPath, "Decrypting path")
+		if err != nil {
+			return serverError(http.StatusInternalServerError, err)
+		}
+
+		xPub := string(xPubBytes)
+		path := string(pathBytes)
+
 		// get index
+		s3 := &s3wrapper.S3Wrapper{}
+		err = s3.New(Region)
+		if err != nil {
+			return serverError(http.StatusInternalServerError, err)
+		}
+
 		index, err := getAddressIndex(s3, bucket, indexFile)
 		if err != nil {
 			return serverError(http.StatusInternalServerError, err)
 		}
 
-		// generate address
+		// generate new address
 		wallet := &walletlive.WalletLive{}
 		wallet.New(xPub, path, network)
 		address, err := wallet.DeriveAddress(uint32(index))
@@ -117,6 +134,27 @@ func lambdaHandler(req events.APIGatewayProxyRequest) (resp events.APIGatewayPro
 	return events.APIGatewayProxyResponse{
 		StatusCode: http.StatusUnauthorized,
 	}, nil
+}
+
+// decrypt data using KMS client from just a session.
+// return plaintext in byte array
+func decrypt(encrypted string, context string) ([]byte, error) {
+	kmsClient := kms.New(session.New())
+	decodedBytes, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		return nil, err
+	}
+
+	input := &kms.DecryptInput{
+		CiphertextBlob: decodedBytes,
+	}
+
+	response, err := kmsClient.Decrypt(input)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Plaintext[:], nil
 }
 
 func getAddressIndex(s3 *s3wrapper.S3Wrapper, bucket, indexFile string) (int, error) {
@@ -161,7 +199,10 @@ func serverError(status int, err error) (events.APIGatewayProxyResponse, error) 
 		Body:       http.StatusText(http.StatusInternalServerError),
 	}
 
-	responseError := &lambdaError{}
+	responseError := &lambdaError{
+		Status:  status,
+		Message: err.Error(),
+	}
 	jsonResponseError, err := json.Marshal(responseError)
 	if err != nil {
 		return basicError, nil
