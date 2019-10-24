@@ -1,9 +1,18 @@
+<p align="center">
+    <a href="https://wszewejuph.execute-api.eu-west-1.amazonaws.com/stage/address">
+        <img src="bitcoin_accepted_here.png" width="150">
+    </a>
+</p>
+<p align="center">
+  <a href="https://travis-ci.com/lorenzodisidoro/bitcoin-butler.svg?branch=master">
+    <img src="https://travis-ci.com/lorenzodisidoro/bitcoin-butler.svg?branch=master">
+  </a>
+</p>
+
 # bitcoin-butler
 *Hi sir, I'm here to help you.*
 
 *I can generate external bitcoin addresses from your `xPub` keys on public request.*
-
-[<img src="bitcoin_accepted_here.png" width="150" />](https://wszewejuph.execute-api.eu-west-1.amazonaws.com/stage/address)
 
 ## Prerequisite
 - [Go 1.11](https://golang.org/) or newer 
@@ -34,8 +43,8 @@ Build script generate `bitcoin-butler-lambda-linux.zip` zip file to use to deplo
 ### Lambda environment
 Runtime environment for the lambda function:
 - `NETWORK` is bitcoin network
-- `XPUB` is extended public key encrypted
-- `PATH` is account BIP32 derivation path (eg. `m/44/0/1/0`) encrypted
+- `XPUB` is extended public key encrypted using KMS
+- `PATH` is account BIP32 derivation path (eg. `m/44/0/1/0`) encrypted using KMS
 - `BUCKET_NAME` as the name of bucket to use
 - `INDEX_FILE_NAME` as the name of file used to save index
 
