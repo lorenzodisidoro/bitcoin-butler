@@ -40,8 +40,8 @@ bash ./scripts/build linux amd64
 or for others OS refer to [a list of valid GOOS and GOARCH](https://gist.github.com/asukakenji/f15ba7e588ac42795f421b48b8aede63).
 Build script generate `bitcoin-butler-lambda-linux.zip` zip file to use to deploy the lambda function to AWS.
 
-### Lambda environment
-Runtime environment for the lambda function:
+### Lambda environments
+Runtime environments for the lambda function:
 - `NETWORK` is bitcoin network
 - `XPUB` is extended public key encrypted using KMS
 - `PATH` is account BIP32 derivation path (eg. `m/44/0/1/0`) encrypted using KMS
